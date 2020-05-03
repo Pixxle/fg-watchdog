@@ -27,7 +27,7 @@ def update_characters():
     new_checksum = get_file_checksum(DB)
     logging.debug(f"Update previous DB Checksum: {checksum}")
     logging.debug(f"Update current DB Checksum: {new_checksum}")
-    
+
     if new_checksum == checksum:
         logging.debug("Update DB Checksum still the same, waiting for change...")
         return

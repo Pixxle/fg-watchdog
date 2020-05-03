@@ -7,8 +7,9 @@ from time import sleep
 import logging
 import hashlib
 import os
-
+import sys
 from containers.characters import Character
+
 
 DB = None
 characters = {}
@@ -110,7 +111,7 @@ def configure_logging(loglevel: str) -> None:
         logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
     logging.debug("Logging configured")
-    
+
 if __name__ == "__main__":
     args = read_configuration()
     setup()

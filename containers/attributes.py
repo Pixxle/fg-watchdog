@@ -12,8 +12,7 @@ class Attributes:
         self.name = attributes["name"]
         self.owner = attributes["owner"]
 
-    @staticmethod
-    def find(xmltree: ET.Element) -> Dict[AnyStr, AnyStr]:
+    def find(self, xmltree: ET.Element) -> Dict[AnyStr, AnyStr]:
         owner = xmltree.find("holder")
         name = xmltree.find("name")
 

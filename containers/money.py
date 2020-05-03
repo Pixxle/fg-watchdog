@@ -24,10 +24,11 @@ class Money:
         money = {}
         for coin in coins.getchildren():
             if "slot" in coin.tag:
-                amount = coin.find("amount").text
-                name = coin.find("name")
+                amount = coin.find("amount").text if coin.find("amount") is not None else 0
+                name = coin.find("name").text.lower() if coin.find("name") is not None else None
+                
                 if name is not None:
-                    money[name.text.lower()] = int(amount)
+                    money[name] = int(amount)
 
         if not "cp" in money:
             money["cp"] = 0

@@ -3,62 +3,55 @@ import xml.etree.ElementTree as ET
 from typing import List, Dict, AnyStr
 import logging
 from dataclasses import dataclass
+from containers.money import Money
+from containers.attributes import Attributes
 
 class Character:
     def __init__(self, attr: Dict[AnyStr, AnyStr], money: Dict[AnyStr, int]):
-        self.attributes = Character.Attributes(
+        self.attributes = Attributes(
             name=attr["name"], 
             owner=attr["owner"],
             tag=attr["tag"]
         )
-        self.money = Character.Money(
+
+        self.money = Money(
             cp = money["cp"],
             sp = money["sp"],
             gp = money["gp"]
         )
 
-    @dataclass
-    class Attributes:
-        name: AnyStr
-        owner: AnyStr
-        tag: AnyStr
+    def log(self):
+        logging.info("-" * 10)
+        logging.info(f"Character DB Tag: {self.attributes.tag}")
+        logging.info(f"Character Owner: {self.attributes.owner}")
+        logging.info(f"Character Name: {self.attributes.name}")
+        logging.info(f"Character Money: {self.money.cp} CP; {self.money.sp} SP; {self.money.gp} GP")
+        # TODO: Add inventory printing
 
-    @dataclass
-    class Money:
-        '''Class for keeping track of gold'''
-        cp: int
-        sp: int
-        gp: int
+    def update(self, xmltree:ET.Element) -> None:
+        logging.debug(f"Update Character: {self.attributes.name} -> Start")
 
-        def set_gold(self, name: AnyStr, cp: int = None, sp: int = None, gp: int = None):
-            if cp != None and cp != self.cp:
-                logging.info(f"Updated copper: {name}, {self.cp} -> {cp}")
-                self.cp = cp
-            if sp != None and sp != self.sp:
-                logging.info(f"Updated silver: {name}, {self.sp} -> {sp}")
-                self.sp = sp
-            if gp != None and gp != self.gp:
-                logging.info(f"Updated gold: {name}, {self.sp} -> {sp}")
+        # Find its own node in the XML tree and pass that to all internal update functions
+        xmltree = xmltree.find(self.attributes.tag)
+        self.attributes.update_attributes(xmltree)
+        self.money.update_gold(self.attributes.name, xmltree)
+
+        logging.debug(f"Update Character: {self.attributes.name} -> Stop")
 
     @staticmethod
     def generate_characters_from_tree(xmltree: ET.Element) -> Dict[AnyStr, Character]:
         results = {}
         for _character in xmltree.getchildren():
-            attributes = {
-                "owner": _character.find("holder").tag,
-                "name": _character.find("name").text,
-                "tag": _character.tag
-            }
-            money = {}
-            coins = _character.find("coins")
-            for coin in coins.getchildren():
-                if "slot" in coin.tag:
-                    amount = coin.find("amount").text
-                    name = coin.find("name")
-                    if name is not None:
-                        money[name.text.lower()] = int(amount)
+            
+            attributes = Attributes.find(_character)
+            attributes["tag"] = _character.tag
 
-            if money != {}:
-                results[attributes["name"]] = Character(attributes, money)
+            money = Money.find(_character)
+
+            results[attributes["tag"]] = Character(attributes, money)
+
+        logging.info("Character load from DB completed, characters:")
+        for tag in results:
+            results[tag].log()
 
         return results

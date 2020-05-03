@@ -25,11 +25,14 @@ def update_characters():
     global checksum
 
     new_checksum = get_file_checksum(DB)
+    logging.debug(f"Update previous DB Checksum: {checksum}")
+    logging.debug(f"Update current DB Checksum: {new_checksum}")
+    
     if new_checksum == checksum:
+        logging.debug("Update DB Checksum still the same, waiting for change...")
         return
 
     checksum = new_checksum
-    print(checksum)
 
     _f = open(DB, 'r')
     tree = ET.parse(_f)
@@ -42,6 +45,8 @@ def setup():
     global characters, checksum
 
     checksum = get_file_checksum(DB)
+
+    logging.debug(f"Setup DB Checksum: {checksum}")
 
     _f = open(DB, 'r')
     tree = ET.parse(_f)

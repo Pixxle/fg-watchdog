@@ -14,8 +14,7 @@ class Money:
         self.sp = money["sp"]
         self.gp = money["gp"]
 
-    @staticmethod
-    def find(xmltree: ET.Element) -> Dict[AnyStr, int]:
+    def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
         coins = xmltree.find("coins")
 
         # Quick return scenario if the player has no coins

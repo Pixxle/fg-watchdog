@@ -4,11 +4,13 @@ from typing import List, Dict, AnyStr
 import logging
 from dataclasses import dataclass
 
-@dataclass
 class Attributes:
-    name: AnyStr
-    owner: AnyStr
-    tag: AnyStr
+
+    def __init__(self, xmltree: ET.Element) -> Attributes:
+        attributes = self.find(xmltree)
+        self.tag = xmltree.tag
+        self.name = attributes["name"]
+        self.owner = attributes["owner"]
 
     @staticmethod
     def find(xmltree: ET.Element) -> Dict[AnyStr, AnyStr]:
@@ -22,25 +24,16 @@ class Attributes:
 
         return attributes
 
-
-    def update_attributes(self, xmltree: ET.Element) -> None:
+    def update(self, xmltree: ET.Element) -> None:
         logging.debug(f"Update Attributes: {self.name} -> Start")
 
-        owner = xmltree.find("holder")
-        name = xmltree.find("name")
+        attributes = self.find(xmltree)
 
-        self.set_attributes(
-            owner.attrib["name"] if owner is not None else "",
-            name.text if name is not None else ""
-        )
+        if attributes["owner"] != self.owner:
+            logging.info(f"Update owner {self.name}: {self.owner} ->  {attributes['owner']}")
+            self.owner = attributes["owner"]
+        if attributes["name"] != self.name:
+            logging.info(f"Update name: {self.name} -> {attributes['name']}")
+            self.name = attributes["name"]
 
         logging.debug(f"Update Attributes: {self.name} -> Stop")
-
-    
-    def set_attributes(self, owner:AnyStr, name:AnyStr):
-        if owner is not self.owner:
-            logging.info(f"Update owner {self.name}: {self.owner} ->  {owner}")
-            self.owner = owner
-        if name is not self.name:
-            logging.info(f"Update name: {self.name} -> {name}")
-            self.name = name

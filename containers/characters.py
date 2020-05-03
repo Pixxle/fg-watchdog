@@ -5,20 +5,13 @@ import logging
 from dataclasses import dataclass
 from containers.money import Money
 from containers.attributes import Attributes
+from containers.abilities import Abilities
 
 class Character:
-    def __init__(self, attr: Dict[AnyStr, AnyStr], money: Dict[AnyStr, int]):
-        self.attributes = Attributes(
-            name=attr["name"], 
-            owner=attr["owner"],
-            tag=attr["tag"]
-        )
-
-        self.money = Money(
-            cp = money["cp"],
-            sp = money["sp"],
-            gp = money["gp"]
-        )
+    def __init__(self, attributes: Attributes, money: Money, abilities: Abilities):
+        self.attributes = attributes
+        self.money = money
+        self.abilities = abilities
 
     def log(self):
         logging.info("-" * 10)
@@ -33,8 +26,11 @@ class Character:
 
         # Find its own node in the XML tree and pass that to all internal update functions
         xmltree = xmltree.find(self.attributes.tag)
-        self.attributes.update_attributes(xmltree)
-        self.money.update_gold(self.attributes.name, xmltree)
+        self.attributes.update(xmltree)
+        self.money.update(
+            self.attributes.owner,
+            self.attributes.name, 
+        xmltree)
 
         logging.debug(f"Update Character: {self.attributes.name} -> Stop")
 
@@ -42,13 +38,16 @@ class Character:
     def generate_characters_from_tree(xmltree: ET.Element) -> Dict[AnyStr, Character]:
         results = {}
         for _character in xmltree.getchildren():
-            
-            attributes = Attributes.find(_character)
-            attributes["tag"] = _character.tag
 
-            money = Money.find(_character)
+            attributes = Attributes(_character)
+            money = Money(_character)
+            abilities = Abilities(_character)
 
-            results[attributes["tag"]] = Character(attributes, money)
+            results[_character.tag] = Character(
+                attributes, 
+                money,
+                abilities
+            )
 
         logging.info("Character load from DB completed, characters:")
         for tag in results:

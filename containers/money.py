@@ -5,12 +5,14 @@ from typing import List, Dict, AnyStr
 import logging
 
 
-@dataclass
 class Money:
     '''Class for keeping track of gold'''
-    cp: int
-    sp: int
-    gp: int
+    def __init__(self, xmltree:ET.Element) -> Money:
+        
+        money = self.find(xmltree)
+        self.cp = money["cp"]
+        self.sp = money["sp"]
+        self.gp = money["gp"]
 
     @staticmethod
     def find(xmltree: ET.Element) -> Dict[AnyStr, int]:
@@ -37,26 +39,21 @@ class Money:
 
         return money
 
-    def update_gold(self, name:AnyStr, xmltree: ET.Element) -> None:
+    def update(self, owner:AnyStr, name:AnyStr, xmltree: ET.Element) -> None:
         logging.debug(f"Update gold: {name} -> Start")
 
         money = self.find(xmltree)
-        self.set_gold(
-            name,
-            cp= money["cp"],
-            sp= money["sp"],
-            gp= money["gp"]
-        )
+
+        if money["cp"] is not self.cp:
+            logging.info(f"Updated copper for {name}, owned by {owner}, {self.cp} -> {money['cp']}")
+            self.cp = money["cp"]
+        if money["sp"] is not self.sp:
+            logging.info(f"Updated silver: {name}, owned by {owner} , {self.sp} -> {money['sp']}")
+            self.sp = money["sp"]
+        if money["gp"] is not self.gp:
+            logging.info(f"Updated gold: {name}, owned by {owner}, {self.gp} -> {money['gp']}")
+            self.gp = money["gp"]
+
 
         logging.debug(f"Update gold: {name} -> Stop")
-
-    def set_gold(self, name: AnyStr, cp: int = None, sp: int = None, gp: int = None):
-        if cp is not None and cp is not self.cp:
-            logging.info(f"Updated copper: {name}, {self.cp} -> {cp}")
-            self.cp = cp
-        if sp is not None and sp is not self.sp:
-            logging.info(f"Updated silver: {name}, {self.sp} -> {sp}")
-            self.sp = sp
-        if gp is not None and gp is not self.gp:
-            logging.info(f"Updated gold: {name}, {self.gp} -> {gp}")
-            self.gp = gp
+        

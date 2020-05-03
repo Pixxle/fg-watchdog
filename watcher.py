@@ -6,11 +6,11 @@ from pathlib import Path, PureWindowsPath
 from time import sleep
 import logging
 import hashlib
+import os
 
 from containers.characters import Character
 
-DB = PureWindowsPath("C:\\Users\\denni\\AppData\\Roaming\\Fantasy Grounds\\campaigns\\The End of Time\\db.xml")
-
+DB = None
 characters = {}
 checksum = ""
 running = True
@@ -42,7 +42,6 @@ def setup():
     global characters, checksum
 
     checksum = get_file_checksum(DB)
-    print(checksum)
 
     _f = open(DB, 'r')
     tree = ET.parse(_f)
@@ -50,17 +49,69 @@ def setup():
     characters = Character.generate_characters_from_tree(charactertree)
     _f.close()
 
+def set_database(database_path: AnyStr = None) -> None:
+    global DB
+    
+    if database_path is not None:
+        DB = Path(database_path)
+        return
 
-def configure_logging():
+
+    appdata = os.getenv('APPDATA')
+    base = Path(appdata) / 'Fantasy Grounds' / 'campaigns'
+    
+    campagins = [x for x in base.iterdir() if x.is_dir()]
+    
+    if len(campagins) == 1:
+        DB = Path(campagins[0]) / 'db.xml'
+        return
+
+    for num, campaign in enumerate(campagins):
+        print(f"{num}: {campaign}")
+    
+    user_input = input("Multiple campaigns found, Please select which one to monitor:")
+    DB = Path(campagins[int(user_input)]) / 'db.xml'
+
+def read_configuration() -> ArgumentParser:
+
+    argparse = ArgumentParser("Simple event logger for Fantasy grounds.")
+    argparse.add_argument("--db", 
+        dest="db",
+        required=False, 
+        help="Set custom location of Fantasy Grounds Database, Use this if DB is stored in non-default location")
+    argparse.add_argument("-l", "--loglevel", 
+        dest="loglevel", 
+        choices=["INFO", "DEBUG"], 
+        default="INFO",
+        help="Apply loglevel")
+    argparse.add_argument("-i", "--interval",
+        dest="interval",
+        default=60,
+        type=int,
+        help="Interval to check for changes in database"
+    )
+    argparse = argparse.parse_args()
+
+    configure_logging(argparse.loglevel)
+    set_database(argparse.db)
+    return argparse
+    
+def configure_logging(loglevel: str) -> None:
+
     FORMAT = '%(asctime)-15s %(levelname)s: %(message)s'
-    logging.basicConfig(format=FORMAT, level=logging.INFO)
+    if loglevel == "INFO":
+        logging.basicConfig(format=FORMAT, level=logging.INFO)
+    else:
+        logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 
+    logging.debug("Logging configured")
+    
 if __name__ == "__main__":
-    configure_logging()
+    args = read_configuration()
     setup()
 
     logging.info("-" * 10)
     logging.info("Load successful, starting to log events:")
     while running:
         update_characters()
-        sleep(60)
+        sleep(args.interval)

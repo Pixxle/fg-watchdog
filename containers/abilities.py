@@ -7,7 +7,24 @@ from dataclasses import dataclass
 class Abilities:
     '''Class for keeping track of Character Abilities'''
 
+    @staticmethod
+    def get_values(xmltree: ET.Element) -> Dict[AnyStr, AnyStr]:
+        logging.debug(f"Find Values from {xmltree}")
+        bonus = xmltree.find("bonus")
+        save = xmltree.find("save")
+        savemod = xmltree.find("savemodifier")
+        saveprof = xmltree.find("saveprof")
+        score = xmltree.find("score")
+        return {
+            "bonus": bonus.text if bonus is not None else 0,
+            "save": save.text if save is not None else 0,
+            "savemod": savemod.text if savemod is not None else 0,
+            "saveprof": saveprof.text if saveprof is not None else 0,
+            "score": score.text if score is not None else 0
+        }
+
     def __init__(self, xmltree: ET.Element) -> Abilities:
+        logging.debug(f"Init abilities from {xmltree}")
         abilities = xmltree.find('abilities')
 
         self.charisma = self.Charisma(abilities)
@@ -17,8 +34,20 @@ class Abilities:
         self.strength = self.Strength(abilities)
         self.wisdom = self.Wisdom(abilities)
 
+    def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+        xmltree = xmltree.find('abilities')
+
+        self.charisma.update(owner, name, xmltree)
+        self.constitution.update(owner, name, xmltree)
+        self.dexterity.update(owner, name, xmltree)
+        self.intelligence.update(owner, name, xmltree)
+        self.strength.update(owner, name, xmltree)
+        self.wisdom.update(owner, name, xmltree)
+
     class Charisma:
         def __init__(self, xmltree: ET.Element):
+            logging.debug(f"Init Charisma from {xmltree}")
+
             values = self.find(xmltree)
             self.bonus = values["bonus"]
             self.save = values["save"]
@@ -27,23 +56,28 @@ class Abilities:
             self.score = values["score"]
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
+            logging.debug(f"Find Charisma from {xmltree}")
             charisma = xmltree.find("charisma")
-            bonus = charisma.find("bonus")
-            save = charisma.find("save")
-            savemod = charisma.find("savemodifier")
-            saveprof = charisma.find("saveprof")
-            score = charisma.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(charisma)
 
-        def update(self, xmltree: ET.Element) -> None:
-            pass
-        
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            logging.debug(f"Update Charisma from {xmltree}")
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Charisma Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Charisma Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Charisma SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Charisma SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Charisma Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
 
     class Constitution:
 
@@ -57,21 +91,25 @@ class Abilities:
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
             constitution = xmltree.find("constitution")
-            bonus = constitution.find("bonus")
-            save = constitution.find("save")
-            savemod = constitution.find("savemodifier")
-            saveprof = constitution.find("saveprof")
-            score = constitution.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(constitution)
 
-        def update(self, xmltree: ET.Element) -> None:
-            pass
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Constitution Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Constitution Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Constitution SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Constitution SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Constitution Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
     
     class Dexterity:
         def __init__(self, xmltree: ET.Element):
@@ -84,21 +122,25 @@ class Abilities:
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
             dexterity = xmltree.find("dexterity")
-            bonus = dexterity.find("bonus")
-            save = dexterity.find("save")
-            savemod = dexterity.find("savemodifier")
-            saveprof = dexterity.find("saveprof")
-            score = dexterity.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(dexterity)
         
-        def update(self, xmltree: ET.Element) -> None:
-            pass
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Dexterity Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Dexterity Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Dexterity SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Dexterity SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Dexterity Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
 
     class Intelligence:
         def __init__(self, xmltree: ET.Element):
@@ -111,21 +153,25 @@ class Abilities:
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
             intelligence = xmltree.find("intelligence")
-            bonus = intelligence.find("bonus")
-            save = intelligence.find("save")
-            savemod = intelligence.find("savemodifier")
-            saveprof = intelligence.find("saveprof")
-            score = intelligence.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(intelligence)
 
-        def update(self, xmltree: ET.Element) -> None:
-            pass
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Intelligence Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Intelligence Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Intelligence SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Intelligence SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Intelligence Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
 
     class Strength:
         def __init__(self, xmltree: ET.Element):
@@ -138,21 +184,25 @@ class Abilities:
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
             strength = xmltree.find("strength")
-            bonus = strength.find("bonus")
-            save = strength.find("save")
-            savemod = strength.find("savemodifier")
-            saveprof = strength.find("saveprof")
-            score = strength.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(strength)
 
-        def update(self, xmltree: ET.Element) -> None:
-            pass
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Strength Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Strength Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Strength SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Strength SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Strength Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
 
     class Wisdom:
         def __init__(self, xmltree: ET.Element):
@@ -165,18 +215,22 @@ class Abilities:
         
         def find(self, xmltree: ET.Element) -> Dict[AnyStr, int]:
             wisdom = xmltree.find("wisdom")
-            bonus = wisdom.find("bonus")
-            save = wisdom.find("save")
-            savemod = wisdom.find("savemodifier")
-            saveprof = wisdom.find("saveprof")
-            score = wisdom.find("score")
-            return {
-                "bonus": bonus.text if bonus is not None else 0,
-                "save": save.text if save is not None else 0,
-                "savemod": savemod.text if savemod is not None else 0,
-                "saveprof": saveprof.text if saveprof is not None else 0,
-                "score": score.text if score is not None else 0
-            }
+            return Abilities.get_values(wisdom)
 
-        def update(self, xmltree: ET.Element) -> None:
-            pass
+        def update(self, owner: AnyStr, name: AnyStr, xmltree: ET.Element) -> None:
+            values = self.find(xmltree)
+            if self.bonus != values["bonus"]:
+                logging.info(f"Updated Wisdom Bonus for {name}, owned by {owner}, {self.bonus} -> {values['bonus']}")
+                self.bonus = values["bonus"]
+            if self.save != values["save"]:
+                logging.info(f"Updated Wisdom Save for {name}, owned by {owner}, {self.save} -> {values['save']}")
+                self.bonus = values["bonus"]
+            if self.savemod != values["savemod"]:
+                logging.info(f"Updated Wisdom SaveMod for {name}, owned by {owner}, {self.savemod} -> {values['savemod']}")
+                self.bonus = values["bonus"]
+            if self.saveprof != values["saveprof"]:
+                logging.info(f"Updated Wisdom SaveProf for {name}, owned by {owner}, {self.saveprof} -> {values['saveprof']}")
+                self.bonus = values["bonus"]
+            if self.score != values["score"]:
+                logging.info(f"Updated Wisdom Score for {name}, owned by {owner}, {self.score} -> {values['score']}")
+                self.bonus = values["bonus"]
